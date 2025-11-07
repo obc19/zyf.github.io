@@ -1,1 +1,31 @@
-<h1  style="font-size: 48px;">张意飞爱打飞机</h1>
+import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
+
+export default function NameParticle() {
+  const mountRef = useRef(null);
+
+  useEffect(() => {
+    // Three.js 粒子系统初始化
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(400, 200);
+    mountRef.current.appendChild(renderer.domElement);
+
+    // 创建"徐琰"文字粒子
+    const loader = new THREE.FontLoader();
+    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+      const textGeometry = new THREE.TextGeometry('徐琰', {
+        font: font,
+        size: 1,
+        height: 0.2
+      });
+      
+      // 粒子化处理...
+    });
+
+    return () => { mountRef.current?.removeChild(renderer.domElement) };
+  }, []);
+
+  return <div ref={mountRef} className="w-full h-48" />;
+}
