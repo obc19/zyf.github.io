@@ -1,31 +1,160 @@
-import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>。。。</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0a0a1a; /* 更深的背景提升对比度 */
+            perspective: 1500px; /* 增加透视距离强化3D感 */
+            overflow: hidden;
+        }
 
-export default function NameParticle() {
-  const mountRef = useRef(null);
+        .container {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out;
+        }
 
-  useEffect(() => {
-    // Three.js 粒子系统初始化
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(400, 200);
-    mountRef.current.appendChild(renderer.domElement);
+        /* 核心3D文字样式 - 增强立体感 */
+        .text-3d {
+            font-size: clamp(3rem, 12vw, 8rem); /* 更大的基础字体 */
+            font-weight: 900;
+            color: #ffffff; /* 纯白主体确保清晰 */
+            text-align: center;
+            transform-style: preserve-3d;
+            animation: pulse 3s ease-in-out infinite;
+            letter-spacing: 0.05em; /* 减少间距避免模糊 */
+        }
 
-    // 创建"徐琰"文字粒子
-    const loader = new THREE.FontLoader();
-    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-      const textGeometry = new THREE.TextGeometry('徐琰', {
-        font: font,
-        size: 1,
-        height: 0.2
-      });
-      
-      // 粒子化处理...
-    });
+        /* 多层阴影构建真实3D厚度 */
+        .text-3d::before,
+        .text-3d::after,
+        .text-3d span::before,
+        .text-3d span::after {
+            content: "徐琰XXXXXX";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
 
-    return () => { mountRef.current?.removeChild(renderer.domElement) };
-  }, []);
+        .text-3d::before {
+            color: rgba(0, 180, 255, 0.8);
+            transform: translateZ(-15px); /* 第一层阴影 */
+        }
 
-  return <div ref={mountRef} className="w-full h-48" />;
-}
+        .text-3d::after {
+            color: rgba(0, 120, 255, 0.6);
+            transform: translateZ(-30px); /* 第二层阴影 */
+        }
+
+        .text-3d span::before {
+            color: rgba(0, 80, 255, 0.4);
+            transform: translateZ(-45px); /* 第三层阴影 */
+        }
+
+        .text-3d span::after {
+            color: rgba(0, 40, 255, 0.2);
+            transform: translateZ(-60px); /* 第四层阴影 - 强化厚度 */
+        }
+
+        /* 轻微发光但不影响清晰度 */
+        @keyframes pulse {
+            0%, 100% {
+                text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+            }
+            50% {
+                text-shadow: 0 0 12px rgba(0, 200, 255, 0.8);
+            }
+        }
+
+        /* 3D空间装饰 - 强化环境感 */
+        .space-decor {
+            position: absolute;
+            border: 1px solid rgba(0, 200, 255, 0.3);
+            transform-style: preserve-3d;
+        }
+
+        .cube {
+            width: 120px;
+            height: 120px;
+            top: -200px;
+            right: -200px;
+            animation: rotate 15s linear infinite;
+        }
+
+        .ring {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            bottom: -220px;
+            left: -220px;
+            animation: rotateReverse 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotateX(0) rotateY(0) translateZ(-50px); }
+            100% { transform: rotateX(360deg) rotateY(360deg) translateZ(-50px); }
+        }
+
+        @keyframes rotateReverse {
+            0% { transform: rotateX(0) rotateY(0) translateZ(-80px); }
+            100% { transform: rotateX(-360deg) rotateY(-360deg) translateZ(-80px); }
+        }
+
+        .tip {
+            position: absolute;
+            bottom: 40px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="3d-container">
+        <div class="text-3d">
+            看什么操泥马
+            <span></span> <!-- 用于额外两层阴影 -->
+        </div>
+        <div class="space-decor cube"></div>
+        <div class="space-decor ring"></div>
+    </div>
+    <div class="tip">移动鼠标查看3D角度变化</div>
+
+    <script>
+        const container = document.getElementById('3d-container');
+        const maxRotate = 25; // 更大的旋转角度，3D效果更明显
+
+        document.addEventListener('mousemove', (e) => {
+            // 计算鼠标在窗口中的相对位置
+            const x = (e.clientX / window.innerWidth - 0.5) * 2;
+            const y = (e.clientY / window.innerHeight - 0.5) * 2;
+            
+            // 应用3D旋转（X/Y轴联动）
+            container.style.transform = `
+                rotateY(${x * maxRotate}deg) 
+                rotateX(${-y * maxRotate}deg)
+            `;
+        });
+
+        // 窗口大小变化时重置
+        window.addEventListener('resize', () => {
+            container.style.transform = 'rotateY(0) rotateX(0)';
+        });
+    </script>
+</body>
+</html>
